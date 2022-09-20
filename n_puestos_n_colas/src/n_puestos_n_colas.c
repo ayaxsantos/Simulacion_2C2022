@@ -1,0 +1,320 @@
+#include "../include/n_puestos_n_colas.h"
+//TODO: Dividir en mas archivos (MAKEFILE), revisar tema fdp, cargar archivos configuracion
+//////////////////////////////////////////////
+
+int main(int argc, char* argv[])
+{
+    int tiempo_finalizacion = 0;
+
+    iniciar_logger();
+    cargar_confguracion(&tiempo_finalizacion);
+
+    realizar_simulacion(tiempo_finalizacion);
+
+    liberar_memoria();
+    return EXIT_SUCCESS;
+}
+
+void liberar_memoria()
+{
+    log_destroy(un_logger);
+}
+
+void procesar_llegada(t_eventos_futuros *eventos_futuros,t_estadisticas *estadisticas)
+{
+    bool se_queda = false;
+    int puesto_elegido;
+    int tiempo_atencion;
+
+    for(int j = 0; j<cantidad_puestos; j++)
+        estadisticas->sumatoria_tiempos_de_llegada[j] += (eventos_futuros->tiempo_proxima_llegada - t) * num_elem[j];
+
+    t = eventos_futuros->tiempo_proxima_llegada;
+
+    eventos_futuros->tiempo_proxima_llegada += (int) obtener_intervalo_entre_arribos();
+    puesto_elegido = seleccionar_puesto(eventos_futuros->tiempo_proxima_salida);
+
+    decidir_arrepentimiento(num_elem[puesto_elegido],&estadisticas->arrepentidos_por_cola[puesto_elegido],&se_queda);
+
+    if(se_queda)
+    {
+        num_elem[puesto_elegido]++;
+        estadisticas->total_personas[puesto_elegido]++;
+
+        if(num_elem[puesto_elegido] == 1)
+        {
+            estadisticas->sumatoria_tiempo_ocioso[puesto_elegido] += t - estadisticas->intervalo_tiempo_ocioso[puesto_elegido];
+            tiempo_atencion = obtener_tiempo_atencion(puesto_elegido);
+            eventos_futuros->tiempo_proxima_salida[puesto_elegido] = t + tiempo_atencion;
+            estadisticas->sumatoria_tiempos_atencion[puesto_elegido] += tiempo_atencion;
+        }
+    }
+}
+
+unsigned int obtener_tiempo_atencion(int puesto_elegido)
+{
+    //TODO: Resolver como procesar n fdp
+    return 75;
+}
+
+void procesar_salida(t_eventos_futuros *eventos_futuros, t_estadisticas *estadisticas, int indice_puesto)
+{
+    int tiempo_atencion;
+    for(int j = 0; j<cantidad_puestos; j++)
+    {
+        estadisticas->sumatoria_tiempos_de_llegada[j] +=
+                (eventos_futuros->tiempo_proxima_salida[indice_puesto] - t) * num_elem[j];
+    }
+
+    t = eventos_futuros->tiempo_proxima_salida[indice_puesto];
+    num_elem[indice_puesto]--;
+
+    if(num_elem[indice_puesto] > 0)
+    {
+        tiempo_atencion = obtener_tiempo_atencion(indice_puesto);
+        eventos_futuros->tiempo_proxima_salida += tiempo_atencion;
+        estadisticas->sumatoria_tiempos_atencion += tiempo_atencion;
+    }
+    else
+    {
+        estadisticas->intervalo_tiempo_ocioso[indice_puesto] = t;
+        eventos_futuros->tiempo_proxima_salida[indice_puesto] = HV;
+    }
+}
+
+void realizar_simulacion(int tiempo_finalizacion)
+{
+    int indice_puesto;
+
+    t_resultados *resultados = inicializar_resultados();
+    t_eventos_futuros *eventos_futuros = malloc(sizeof(t_eventos_futuros));
+    t_estadisticas *estadisticas = malloc(sizeof(t_estadisticas));
+
+    set_condiciones_iniciales(estadisticas,eventos_futuros);
+
+    while(true)
+    {
+        indice_puesto = obtener_puesto_menor_TPS(eventos_futuros->tiempo_proxima_salida);
+
+        if(eventos_futuros->tiempo_proxima_llegada <= eventos_futuros->tiempo_proxima_salida[indice_puesto])
+        {
+            //ES UNA LLEGADA
+            procesar_llegada(eventos_futuros,estadisticas);
+            log_info(un_logger,"ENTRADA | Tiempo: %d",t);
+        }
+        else
+        {
+            //ES UNA SALIDA
+            procesar_salida(eventos_futuros, estadisticas, indice_puesto);
+            log_info(un_logger,"SALIDA | Tiempo: %d",t);
+        }
+
+        if(t >= tiempo_finalizacion)
+        {
+            calcular_resultados(resultados,estadisticas);
+            imprimir_resultados(resultados);
+            break;
+        }
+    }
+}
+
+void calcular_resultados(t_resultados *resultados, t_estadisticas *estadisticas)
+{
+    int tiempo_en_sistema;
+
+    for(int k=0; k<cantidad_puestos; k++)
+    {
+        tiempo_en_sistema = estadisticas->sumatoria_tiempos_atencion[k] + estadisticas->sumatoria_tiempo_de_salida[k];
+
+        resultados->promedio_permenancia[k] = calcular_tiempo_en_sistema(tiempo_en_sistema,estadisticas,k);
+        resultados->promedio_espera[k] = calcular_promedio_espera(tiempo_en_sistema,estadisticas,k);
+        resultados->porcentaje_tiempo_ocioso[k] = calcular_promedio_tiempo_ocioso(estadisticas,k);
+        resultados->promedio_arrepentidos[k] = calcular_promedio_arrepentidos(estadisticas,k);
+    }
+}
+
+void imprimir_resultados(t_resultados* resultados)
+{
+    for(int k=0; k<cantidad_puestos; k++)
+    {
+        log_info(un_logger,"-------------- Resultados puesto %d --------------",k);
+        log_info(un_logger,"Promedio de permaencia en el sistema: %lf",resultados->promedio_permenancia[k]);
+        log_info(un_logger,"Promedio de espera en cola: %lf",resultados->promedio_espera[k]);
+        log_info(un_logger,"Porcentaje de tiempo ocioso: %lf",resultados->porcentaje_tiempo_ocioso[k]);
+        log_info(un_logger,"Porcentaje de arrepentidos: %lf",resultados->promedio_arrepentidos[k]);
+    }
+}
+
+double calcular_tiempo_en_sistema(int tiempo_en_sistema, t_estadisticas *estadisticas, int k)
+{
+    if(estadisticas->total_personas[k] == 0)
+        return -1;
+    else
+        return tiempo_en_sistema / estadisticas->total_personas[k];
+}
+
+double calcular_promedio_espera(int tiempo_en_sistema, t_estadisticas *estadisticas, int k)
+{
+    if(estadisticas->total_personas[k] == 0)
+        return -1;
+    else
+        return (tiempo_en_sistema - estadisticas->sumatoria_tiempos_atencion[k]) / estadisticas->total_personas[k];
+}
+
+double calcular_promedio_tiempo_ocioso(t_estadisticas *estadisticas, int k)
+{
+    return (estadisticas->sumatoria_tiempo_ocioso[k] * 100) / t;
+}
+
+double calcular_promedio_arrepentidos(t_estadisticas *estadisticas, int k)
+{
+    int total_personas_con_arrep = estadisticas->total_personas[k] + estadisticas->arrepentidos_por_cola[k];
+    if(total_personas_con_arrep == 0)
+        return -1;
+    else
+        return (estadisticas->arrepentidos_por_cola[k] / total_personas_con_arrep) * 100;
+}
+
+void set_condiciones_iniciales(t_estadisticas *estadisticas, t_eventos_futuros *eventos_futuros)
+{
+    //TODO: Refactorizar esto...
+    inicializar_vector_nulo((void*) &estadisticas->sumatoria_tiempos_de_llegada);
+    inicializar_vector_nulo((void*) &estadisticas->sumatoria_tiempo_de_salida);
+    inicializar_vector_nulo((void*) &estadisticas->sumatoria_tiempos_atencion);
+    inicializar_vector_nulo((void*) &estadisticas->total_personas);
+    inicializar_vector_nulo((void*) &estadisticas->arrepentidos_por_cola);
+    inicializar_vector_nulo((void*) &estadisticas->sumatoria_tiempo_ocioso);
+    inicializar_vector_nulo((void*) &estadisticas->intervalo_tiempo_ocioso);
+
+    eventos_futuros->tiempo_proxima_llegada = 0;
+    eventos_futuros->tiempo_proxima_salida = malloc(cantidad_puestos * sizeof(int));
+    for(int k=0; k<cantidad_puestos; k++)
+        eventos_futuros->tiempo_proxima_salida[k] = HV;
+
+    t = 0;
+    inicializar_vector_nulo((void*) &num_elem);
+}
+
+t_resultados *inicializar_resultados()
+{
+    t_resultados *unos_resultados = malloc(sizeof(t_resultados));
+
+    unos_resultados->promedio_arrepentidos =
+            malloc(sizeof(unos_resultados->promedio_arrepentidos[0])*cantidad_puestos);
+    unos_resultados->porcentaje_tiempo_ocioso =
+            malloc(sizeof(unos_resultados->porcentaje_tiempo_ocioso[0])*cantidad_puestos);
+
+    unos_resultados->promedio_espera = malloc(sizeof(unos_resultados->promedio_espera[0])*cantidad_puestos);
+    unos_resultados->promedio_permenancia = malloc(sizeof(unos_resultados->promedio_permenancia[0])*cantidad_puestos);
+
+    return unos_resultados;
+}
+
+void inicializar_vector_nulo(void **un_campo)
+{
+    int tamanio = cantidad_puestos * sizeof(int);
+    *un_campo = malloc(tamanio);
+    memset(*un_campo, 0, tamanio);
+}
+
+void printArrayvalues(int anyArray[], int anyNumber)
+{
+    int index;
+    for (index=0; index<anyNumber; index++)
+        log_info(un_logger,"%d ", anyArray[index]);
+}
+
+//Rutina de arrepentimiento
+void decidir_arrepentimiento(int num_elem,int *arrepentidos_en_cola, bool* se_queda)
+{
+    int elem_sin_persona = num_elem - 1;
+    srand(time(NULL));
+
+    if(elem_sin_persona <= 5)
+        *se_queda = true;
+
+    else if(elem_sin_persona > 8)
+    {
+        (*arrepentidos_en_cola)++;
+        *se_queda = false;
+    }
+    else
+    {
+        float valor_aleatorio =(float) rand()/RAND_MAX;
+        if(valor_aleatorio >= 0.2)
+        {
+            (*arrepentidos_en_cola)++;
+            *se_queda = false;
+        }
+        else
+            *se_queda = true;
+    }
+}
+
+int seleccionar_puesto(int unos_tps[])
+{
+    for(int i = 0; i < cantidad_puestos; i++)
+    {
+        if(unos_tps[i] == HV)
+            return i;
+    }
+    return -1;
+}
+
+unsigned long obtener_intervalo_entre_arribos()
+{
+    //return generar_valor_dist_uniforme(distribucion_ia->supremo,distribucion_ia->infimo);
+    return 12;
+}
+
+int obtener_puesto_menor_TPS(int unos_tps[])
+{
+    int indice_buscado = 0;
+    for(int i = 0; i < cantidad_puestos;i++)
+    {
+        if(unos_tps[i] < unos_tps[indice_buscado])
+            indice_buscado = i;
+    }
+    return indice_buscado;
+}
+
+void iniciar_logger()
+{
+    t_log_level nivel_log = LOG_LEVEL_INFO;
+    un_logger = log_create("./n_puestos_c_colas.log","n_puestos_n_colas",true,nivel_log);
+
+    if(un_logger == NULL)
+    {
+        write(0,"ERROR -> No se pudo crear el log \n",40);
+        exit(EXIT_FAILURE);
+    }
+    log_info(un_logger,"--------------- Iniciando simulacion -----------------");
+}
+
+void cargar_confguracion(int *tiempo_finalizacion)
+{
+    t_config *una_config = config_create("./parametros.config");
+
+    cantidad_puestos = config_get_int_value(una_config, "CANTIDAD_COLAS_Y_PUESTOS");
+    *tiempo_finalizacion = config_get_int_value(una_config,"TIEMPO_SIMULACION");
+
+    config_destroy(una_config);
+}
+
+void cargar_configuracion_fdp()
+{
+
+}
+
+void cargar_confguracion_ia()
+{
+    t_config *una_config = config_create("../valores_ia.config");
+    distribucion_ia = malloc(sizeof(t_dist_uniforme));
+
+    distribucion_ia->supremo = config_get_int_value(una_config, "SUPREMO");
+    distribucion_ia->infimo = config_get_int_value(una_config, "INFIMO");
+
+    config_destroy(una_config);
+}
+
+//////////////////////////////////////////////
