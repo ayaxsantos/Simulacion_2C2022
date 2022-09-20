@@ -1,23 +1,29 @@
-CFLAGS = -Wall -DDEBUG
+CFLAGS = -g -Wall -DDEBUG
 SRC_C = ./src/n_puestos_n_colas.c
 SRC_H = ./include/n_puestos_n_colas.h
 BIN = ./bin
+OBJS = ./bin/generador_va.o
 
 LIBS = commons
 
 ####################################################
 
-filename = n_puestos_n_colas.out
+TARGET = n_puestos_n_colas.out
 
 ####################################################
 
 .PHONY: all
-all: clean
-	mkdir $(BIN)
-	gcc -g $(CFLAGS) $(SRC_C) -o $(addprefix $(BIN)/,$(filename)) $(LIBS:%=-l%)
+all: $(OBJS)
+	gcc $(CFLAGS) $(SRC_C) -o $(addprefix $(BIN)/,$(TARGET)) $(OBJS) $(LIBS:%=-l%)
 
-.PHONY: all
+./bin/generador_va.o: ./src/generador_va.c ./include/generador_va.h | generate_bin
+	gcc -c ./src/generador_va.c -o ./bin/generador_va.o
+
+generate_bin:
+	mkdir -p $(BIN)
+
+.PHONY: clean
 clean:
-	-rm -rfv obj bin
+	-rm -rfv obj $(BIN)
 
 ####################################################

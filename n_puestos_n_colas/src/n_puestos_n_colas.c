@@ -1,5 +1,5 @@
 #include "../include/n_puestos_n_colas.h"
-//TODO: Dividir en mas archivos (MAKEFILE), revisar tema fdp, cargar archivos configuracion
+//TODO: Optimizar MAKEFILE y ver el tema de multiples fdp para c/puesto
 //////////////////////////////////////////////
 
 int main(int argc, char* argv[])
@@ -8,6 +8,7 @@ int main(int argc, char* argv[])
 
     iniciar_logger();
     cargar_confguracion(&tiempo_finalizacion);
+    cargar_configuracion_fdp();
 
     realizar_simulacion(tiempo_finalizacion);
 
@@ -31,7 +32,7 @@ void procesar_llegada(t_eventos_futuros *eventos_futuros,t_estadisticas *estadis
 
     t = eventos_futuros->tiempo_proxima_llegada;
 
-    eventos_futuros->tiempo_proxima_llegada += (int) obtener_intervalo_entre_arribos();
+    eventos_futuros->tiempo_proxima_llegada = t + (int) obtener_intervalo_entre_arribos();
     puesto_elegido = seleccionar_puesto(eventos_futuros->tiempo_proxima_salida);
 
     decidir_arrepentimiento(num_elem[puesto_elegido],&estadisticas->arrepentidos_por_cola[puesto_elegido],&se_queda);
@@ -263,8 +264,7 @@ int seleccionar_puesto(int unos_tps[])
 
 unsigned long obtener_intervalo_entre_arribos()
 {
-    //return generar_valor_dist_uniforme(distribucion_ia->supremo,distribucion_ia->infimo);
-    return 12;
+    return generar_valor_dist_uniforme(distribucion_ia->supremo,distribucion_ia->infimo);
 }
 
 int obtener_puesto_menor_TPS(int unos_tps[])
@@ -303,12 +303,12 @@ void cargar_confguracion(int *tiempo_finalizacion)
 
 void cargar_configuracion_fdp()
 {
-
+    cargar_confguracion_ia();
 }
 
 void cargar_confguracion_ia()
 {
-    t_config *una_config = config_create("../valores_ia.config");
+    t_config *una_config = config_create("./valores_ia.config");
     distribucion_ia = malloc(sizeof(t_dist_uniforme));
 
     distribucion_ia->supremo = config_get_int_value(una_config, "SUPREMO");

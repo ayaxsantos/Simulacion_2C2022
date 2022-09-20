@@ -36,7 +36,7 @@ typedef struct resultados
     double *promedio_permenancia;
     double *promedio_espera;
     double *porcentaje_tiempo_ocioso;
-    double *promedio_arrepentidos;;
+    double *promedio_arrepentidos;
 }t_resultados;
 
 ///////////////////////////////////////////////
@@ -45,6 +45,8 @@ void iniciar_logger();
 void cargar_confguracion(int*);
 void realizar_simulacion(int);
 t_resultados *inicializar_resultados();
+void cargar_confguracion_ia();
+void cargar_configuracion_fdp();
 
 int obtener_puesto_menor_TPS(int*);
 int seleccionar_puesto(int*);
