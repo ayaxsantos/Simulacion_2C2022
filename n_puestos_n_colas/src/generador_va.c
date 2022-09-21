@@ -3,6 +3,7 @@
 //////////////////////////////////////////////
 
 static double obtener_valor_aleatorio();
+static double inversa_dist_uniforme(t_dist_intervalo*, double);
 
 //////////////////////////////////////////////
 
@@ -15,7 +16,7 @@ unsigned long generar_valor_dist_uniforme(t_dist_intervalo *intervalo)
 
     // x = a + (b – a) R
     valor_aleatorio = obtener_valor_aleatorio();
-    valor_generado = intervalo->infimo + ((intervalo->supremo - intervalo->infimo) * valor_aleatorio);
+    valor_generado = inversa_dist_uniforme(intervalo,valor_aleatorio);
 
     return valor_generado;
 }
@@ -33,13 +34,18 @@ unsigned long metodo_del_rechazo(t_dist_intervalo *intervalo, double valor_maxim
         valor_aleatorio_pri =  obtener_valor_aleatorio();
         valor_aleatorio_seg = obtener_valor_aleatorio();
 
-        valor_generado = intervalo->infimo + ((intervalo->supremo - intervalo->infimo) * valor_aleatorio_pri);
+        valor_generado = inversa_dist_uniforme(intervalo,valor_aleatorio_pri);
 
         y = valor_maximo * valor_aleatorio_seg;
 
         if(y <= fdp(valor_generado))
             return valor_generado;
     }
+}
+
+static double inversa_dist_uniforme(t_dist_intervalo *intervalo, double valor_aleatorio)
+{
+    return intervalo->infimo + ((intervalo->supremo - intervalo->infimo) * valor_aleatorio);
 }
 
 static double obtener_valor_aleatorio()
