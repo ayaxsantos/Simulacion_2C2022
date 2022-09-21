@@ -46,15 +46,17 @@ void cargar_confguracion(int*);
 void realizar_simulacion(int);
 t_resultados *inicializar_resultados();
 void cargar_confguracion_ia();
+void cargar_confguracion_ta();
 void cargar_configuracion_fdp();
 
 int obtener_puesto_menor_TPS(int*);
 int seleccionar_puesto(int*);
 unsigned long obtener_intervalo_entre_arribos();
-void decidir_arrepentimiento(int,int*, bool*);
+void decidir_arrepentimiento(int, int*, bool*);
 void inicializar_vector_nulo(void**);
 void set_condiciones_iniciales(t_estadisticas*, t_eventos_futuros *);
 unsigned int obtener_tiempo_atencion(int);
+double fdp(int);
 void procesar_llegada(t_eventos_futuros *,t_estadisticas *);
 void procesar_salida(t_eventos_futuros *,t_estadisticas *,int);
 void calcular_resultados(t_resultados*, t_estadisticas *);
@@ -66,7 +68,6 @@ double calcular_promedio_arrepentidos(t_estadisticas *, int);
 
 void imprimir_resultados(t_resultados*);
 void cargar_configuracion_fdp();
-void printArrayvalues(int anyArray[], int anyNumber);
 void liberar_memoria();
 
 ///////////////////////////////////////////////
@@ -76,7 +77,8 @@ int cantidad_puestos;
 int t;
 int *num_elem;
 
-t_dist_uniforme *distribucion_ia;
+t_dist_intervalo *distribucion_ia;
+t_dist_intervalo *distribucion_ta;
 
 ///////////////////////////////////////////////
 

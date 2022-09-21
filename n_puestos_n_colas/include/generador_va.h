@@ -3,16 +3,18 @@
 
 #include <time.h>
 #include <stdlib.h>
+#include <stdbool.h>
 
-typedef struct dist_uniforme
+typedef struct dist_intervalo
 {
     unsigned int supremo;
     unsigned int infimo;
-}t_dist_uniforme;
+}t_dist_intervalo;
 
 //////////////////////////////////////////////
 
-unsigned long generar_valor_dist_uniforme(unsigned long, unsigned long);
+unsigned long generar_valor_dist_uniforme(t_dist_intervalo*);
+unsigned long metodo_del_rechazo(t_dist_intervalo *intervalo, double valor_maximo, double (*fdp)(int));
 
 //////////////////////////////////////////////
 

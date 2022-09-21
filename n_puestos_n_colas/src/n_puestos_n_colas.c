@@ -52,10 +52,20 @@ void procesar_llegada(t_eventos_futuros *eventos_futuros,t_estadisticas *estadis
     }
 }
 
+double fdp(int x)
+{
+    return 0.375 - (0.09375 * ((x-4)^2));
+}
+
 unsigned int obtener_tiempo_atencion(int puesto_elegido)
 {
     //TODO: Resolver como procesar n fdp
-    return 75;
+    return metodo_del_rechazo(distribucion_ta, 0.375, fdp);
+}
+
+unsigned long obtener_intervalo_entre_arribos()
+{
+    return generar_valor_dist_uniforme(distribucion_ia);
 }
 
 void procesar_salida(t_eventos_futuros *eventos_futuros, t_estadisticas *estadisticas, int indice_puesto)
@@ -101,13 +111,13 @@ void realizar_simulacion(int tiempo_finalizacion)
         {
             //ES UNA LLEGADA
             procesar_llegada(eventos_futuros,estadisticas);
-            log_info(un_logger,"ENTRADA | Tiempo: %d",t);
+            //log_info(un_logger,"ENTRADA | Tiempo: %d",t);
         }
         else
         {
             //ES UNA SALIDA
             procesar_salida(eventos_futuros, estadisticas, indice_puesto);
-            log_info(un_logger,"SALIDA | Tiempo: %d",t);
+            //log_info(un_logger,"SALIDA | Tiempo: %d",t);
         }
 
         if(t >= tiempo_finalizacion)
@@ -218,13 +228,6 @@ void inicializar_vector_nulo(void **un_campo)
     memset(*un_campo, 0, tamanio);
 }
 
-void printArrayvalues(int anyArray[], int anyNumber)
-{
-    int index;
-    for (index=0; index<anyNumber; index++)
-        log_info(un_logger,"%d ", anyArray[index]);
-}
-
 //Rutina de arrepentimiento
 void decidir_arrepentimiento(int num_elem,int *arrepentidos_en_cola, bool* se_queda)
 {
@@ -241,7 +244,7 @@ void decidir_arrepentimiento(int num_elem,int *arrepentidos_en_cola, bool* se_qu
     }
     else
     {
-        float valor_aleatorio =(float) rand()/RAND_MAX;
+        float valor_aleatorio = (float) rand()/RAND_MAX;
         if(valor_aleatorio >= 0.2)
         {
             (*arrepentidos_en_cola)++;
@@ -260,11 +263,6 @@ int seleccionar_puesto(int unos_tps[])
             return i;
     }
     return -1;
-}
-
-unsigned long obtener_intervalo_entre_arribos()
-{
-    return generar_valor_dist_uniforme(distribucion_ia->supremo,distribucion_ia->infimo);
 }
 
 int obtener_puesto_menor_TPS(int unos_tps[])
@@ -304,15 +302,27 @@ void cargar_confguracion(int *tiempo_finalizacion)
 void cargar_configuracion_fdp()
 {
     cargar_confguracion_ia();
+    cargar_confguracion_ta();
 }
 
 void cargar_confguracion_ia()
 {
     t_config *una_config = config_create("./valores_ia.config");
-    distribucion_ia = malloc(sizeof(t_dist_uniforme));
+    distribucion_ia = malloc(sizeof(t_dist_intervalo));
 
     distribucion_ia->supremo = config_get_int_value(una_config, "SUPREMO");
     distribucion_ia->infimo = config_get_int_value(una_config, "INFIMO");
+
+    config_destroy(una_config);
+}
+
+void cargar_confguracion_ta()
+{
+    t_config *una_config = config_create("./valores_ta.config");
+    distribucion_ta = malloc(sizeof(t_dist_intervalo));
+
+    distribucion_ta->supremo = config_get_int_value(una_config, "SUPREMO");
+    distribucion_ta->infimo = config_get_int_value(una_config, "INFIMO");
 
     config_destroy(una_config);
 }
