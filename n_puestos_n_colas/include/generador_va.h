@@ -14,7 +14,7 @@ typedef struct dist_intervalo
 //////////////////////////////////////////////
 
 unsigned long generar_valor_dist_uniforme(t_dist_intervalo*);
-unsigned long metodo_del_rechazo(t_dist_intervalo *intervalo, double valor_maximo, double (*fdp)(int));
+unsigned long metodo_del_rechazo(t_dist_intervalo*, double, double (*fdp)(int));
 
 //////////////////////////////////////////////
 

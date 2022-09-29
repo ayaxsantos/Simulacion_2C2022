@@ -14,7 +14,6 @@ unsigned long generar_valor_dist_uniforme(t_dist_intervalo *intervalo)
 
     srand(time(NULL));
 
-    // x = a + (b – a) R
     valor_aleatorio = obtener_valor_aleatorio();
     valor_generado = inversa_dist_uniforme(intervalo,valor_aleatorio);
 
@@ -45,6 +44,7 @@ unsigned long metodo_del_rechazo(t_dist_intervalo *intervalo, double valor_maxim
 
 static double inversa_dist_uniforme(t_dist_intervalo *intervalo, double valor_aleatorio)
 {
+    // x = a + (b – a) R
     return intervalo->infimo + ((intervalo->supremo - intervalo->infimo) * valor_aleatorio);
 }
 

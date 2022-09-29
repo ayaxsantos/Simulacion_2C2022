@@ -60,6 +60,7 @@ double fdp(int x)
 unsigned int obtener_tiempo_atencion(int puesto_elegido)
 {
     //TODO: Resolver como procesar n fdp
+    //return generar_valor_dist_uniforme(distribucion_ta);
     return metodo_del_rechazo(distribucion_ta, 0.375, fdp);
 }
 
@@ -71,10 +72,13 @@ unsigned long obtener_intervalo_entre_arribos()
 void procesar_salida(t_eventos_futuros *eventos_futuros, t_estadisticas *estadisticas, int indice_puesto)
 {
     int tiempo_atencion;
+    int a = 0;
+    int b = 0;
     for(int j = 0; j<cantidad_puestos; j++)
     {
-        estadisticas->sumatoria_tiempos_de_llegada[j] +=
-                (eventos_futuros->tiempo_proxima_salida[indice_puesto] - t) * num_elem[j];
+        a = eventos_futuros->tiempo_proxima_salida[indice_puesto];
+        b = a - t;
+        estadisticas->sumatoria_tiempo_de_salida[j] = estadisticas->sumatoria_tiempo_de_salida[j] + (b* num_elem[j]);
     }
 
     t = eventos_futuros->tiempo_proxima_salida[indice_puesto];
@@ -83,8 +87,8 @@ void procesar_salida(t_eventos_futuros *eventos_futuros, t_estadisticas *estadis
     if(num_elem[indice_puesto] > 0)
     {
         tiempo_atencion = obtener_tiempo_atencion(indice_puesto);
-        eventos_futuros->tiempo_proxima_salida += tiempo_atencion;
-        estadisticas->sumatoria_tiempos_atencion += tiempo_atencion;
+        eventos_futuros->tiempo_proxima_salida[indice_puesto] = t + tiempo_atencion;
+        estadisticas->sumatoria_tiempos_atencion[indice_puesto] += tiempo_atencion;
     }
     else
     {
@@ -111,13 +115,13 @@ void realizar_simulacion(int tiempo_finalizacion)
         {
             //ES UNA LLEGADA
             procesar_llegada(eventos_futuros,estadisticas);
-            //log_info(un_logger,"ENTRADA | Tiempo: %d",t);
+            log_info(un_logger,"ENTRADA | Tiempo: %d",t);
         }
         else
         {
             //ES UNA SALIDA
             procesar_salida(eventos_futuros, estadisticas, indice_puesto);
-            //log_info(un_logger,"SALIDA | Tiempo: %d",t);
+            log_info(un_logger,"SALIDA | Tiempo: %d",t);
         }
 
         if(t >= tiempo_finalizacion)
@@ -135,7 +139,7 @@ void calcular_resultados(t_resultados *resultados, t_estadisticas *estadisticas)
 
     for(int k=0; k<cantidad_puestos; k++)
     {
-        tiempo_en_sistema = estadisticas->sumatoria_tiempos_atencion[k] + estadisticas->sumatoria_tiempo_de_salida[k];
+        tiempo_en_sistema = estadisticas->sumatoria_tiempo_de_salida[k] + estadisticas->sumatoria_tiempos_de_llegada[k];
 
         resultados->promedio_permenancia[k] = calcular_tiempo_en_sistema(tiempo_en_sistema,estadisticas,k);
         resultados->promedio_espera[k] = calcular_promedio_espera(tiempo_en_sistema,estadisticas,k);
@@ -146,13 +150,13 @@ void calcular_resultados(t_resultados *resultados, t_estadisticas *estadisticas)
 
 void imprimir_resultados(t_resultados* resultados)
 {
-    for(int k=0; k<cantidad_puestos; k++)
+    for(int p=0; p<cantidad_puestos; p++)
     {
-        log_info(un_logger,"-------------- Resultados puesto %d --------------",k);
-        log_info(un_logger,"Promedio de permaencia en el sistema: %lf",resultados->promedio_permenancia[k]);
-        log_info(un_logger,"Promedio de espera en cola: %lf",resultados->promedio_espera[k]);
-        log_info(un_logger,"Porcentaje de tiempo ocioso: %lf",resultados->porcentaje_tiempo_ocioso[k]);
-        log_info(un_logger,"Porcentaje de arrepentidos: %lf",resultados->promedio_arrepentidos[k]);
+        log_info(un_logger,"------------- Resultados puesto %d -------------",p);
+        log_info(un_logger,"Promedio de permaencia en el sistema: %lf",resultados->promedio_permenancia[p]);
+        log_info(un_logger,"Promedio de espera en cola: %lf",resultados->promedio_espera[p]);
+        log_info(un_logger,"Porcentaje de tiempo ocioso: %lf",resultados->porcentaje_tiempo_ocioso[p]);
+        log_info(un_logger,"Porcentaje de arrepentidos: %lf",resultados->promedio_arrepentidos[p]);
     }
 }
 
@@ -255,14 +259,16 @@ void decidir_arrepentimiento(int num_elem,int *arrepentidos_en_cola, bool* se_qu
     }
 }
 
-int seleccionar_puesto(int unos_tps[])
+int seleccionar_puesto(int unos_tps[] )
 {
+    int indice_buscado = 0;
+
     for(int i = 0; i < cantidad_puestos; i++)
     {
-        if(unos_tps[i] == HV)
-            return i;
+        if(num_elem[i] < num_elem[indice_buscado])
+            indice_buscado = i;
     }
-    return -1;
+    return indice_buscado;
 }
 
 int obtener_puesto_menor_TPS(int unos_tps[])
@@ -271,7 +277,14 @@ int obtener_puesto_menor_TPS(int unos_tps[])
     for(int i = 0; i < cantidad_puestos;i++)
     {
         if(unos_tps[i] < unos_tps[indice_buscado])
+        {
             indice_buscado = i;
+        }
+        else if(unos_tps[i] == HV)
+        {
+            indice_buscado = i;
+            break;
+        }
     }
     return indice_buscado;
 }
@@ -279,7 +292,7 @@ int obtener_puesto_menor_TPS(int unos_tps[])
 void iniciar_logger()
 {
     t_log_level nivel_log = LOG_LEVEL_INFO;
-    un_logger = log_create("./n_puestos_c_colas.log","n_puestos_n_colas",true,nivel_log);
+    un_logger = log_create("./n_puestos_n_colas.log","n_puestos_n_colas",true,nivel_log);
 
     if(un_logger == NULL)
     {
