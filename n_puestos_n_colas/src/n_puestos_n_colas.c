@@ -144,7 +144,7 @@ void calcular_resultados(t_resultados *resultados, t_estadisticas *estadisticas)
         resultados->promedio_permenancia[k] = calcular_tiempo_en_sistema(tiempo_en_sistema,estadisticas,k);
         resultados->promedio_espera[k] = calcular_promedio_espera(tiempo_en_sistema,estadisticas,k);
         resultados->porcentaje_tiempo_ocioso[k] = calcular_promedio_tiempo_ocioso(estadisticas,k);
-        resultados->promedio_arrepentidos[k] = calcular_promedio_arrepentidos(estadisticas,k);
+        resultados->porcentaje_arrepentimiento[k] = calcular_porcentaje_arrepentimiento(estadisticas,k);
     }
 }
 
@@ -153,10 +153,10 @@ void imprimir_resultados(t_resultados* resultados)
     for(int p=0; p<cantidad_puestos; p++)
     {
         log_info(un_logger,"------------- Resultados puesto %d -------------",p);
-        log_info(un_logger,"Promedio de permaencia en el sistema: %lf",resultados->promedio_permenancia[p]);
+        log_info(un_logger,"Promedio de permanencia en el sistema: %lf",resultados->promedio_permenancia[p]);
         log_info(un_logger,"Promedio de espera en cola: %lf",resultados->promedio_espera[p]);
         log_info(un_logger,"Porcentaje de tiempo ocioso: %lf",resultados->porcentaje_tiempo_ocioso[p]);
-        log_info(un_logger,"Porcentaje de arrepentidos: %lf",resultados->promedio_arrepentidos[p]);
+        log_info(un_logger,"Porcentaje de arrepentimiento: %lf",resultados->porcentaje_arrepentimiento[p]);
     }
 }
 
@@ -181,7 +181,7 @@ double calcular_promedio_tiempo_ocioso(t_estadisticas *estadisticas, int k)
     return (estadisticas->sumatoria_tiempo_ocioso[k] * 100) / t;
 }
 
-double calcular_promedio_arrepentidos(t_estadisticas *estadisticas, int k)
+double calcular_porcentaje_arrepentimiento(t_estadisticas *estadisticas, int k)
 {
     int total_personas_con_arrep = estadisticas->total_personas[k] + estadisticas->arrepentidos_por_cola[k];
     if(total_personas_con_arrep == 0)
@@ -214,8 +214,9 @@ t_resultados *inicializar_resultados()
 {
     t_resultados *unos_resultados = malloc(sizeof(t_resultados));
 
-    unos_resultados->promedio_arrepentidos =
-            malloc(sizeof(unos_resultados->promedio_arrepentidos[0])*cantidad_puestos);
+    unos_resultados->porcentaje_arrepentimiento =
+            malloc(sizeof(unos_resultados->porcentaje_arrepentimiento
+    [0])*cantidad_puestos);
     unos_resultados->porcentaje_tiempo_ocioso =
             malloc(sizeof(unos_resultados->porcentaje_tiempo_ocioso[0])*cantidad_puestos);
 

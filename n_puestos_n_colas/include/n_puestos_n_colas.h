@@ -36,7 +36,7 @@ typedef struct resultados
     double *promedio_permenancia;
     double *promedio_espera;
     double *porcentaje_tiempo_ocioso;
-    double *promedio_arrepentidos;
+    double *porcentaje_arrepentimiento;
 }t_resultados;
 
 ///////////////////////////////////////////////
@@ -64,7 +64,7 @@ void calcular_resultados(t_resultados*, t_estadisticas *);
 double calcular_tiempo_en_sistema(int, t_estadisticas *, int);
 double calcular_promedio_espera(int, t_estadisticas *, int);
 double calcular_promedio_tiempo_ocioso(t_estadisticas *, int);
-double calcular_promedio_arrepentidos(t_estadisticas *, int);
+double calcular_porcentaje_arrepentimiento(t_estadisticas *, int);
 
 void imprimir_resultados(t_resultados*);
 void cargar_configuracion_fdp();
