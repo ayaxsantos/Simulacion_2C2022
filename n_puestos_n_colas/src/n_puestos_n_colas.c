@@ -12,13 +12,7 @@ int main(int argc, char* argv[])
 
     realizar_simulacion(tiempo_finalizacion);
 
-    liberar_memoria();
     return EXIT_SUCCESS;
-}
-
-void liberar_memoria()
-{
-    log_destroy(un_logger);
 }
 
 void procesar_llegada(t_eventos_futuros *eventos_futuros,t_estadisticas *estadisticas)
@@ -131,6 +125,49 @@ void realizar_simulacion(int tiempo_finalizacion)
             break;
         }
     }
+    liberar_memoria(resultados,estadisticas,eventos_futuros);
+}
+
+void liberar_memoria(t_resultados *resultados, t_estadisticas *estadisticas,t_eventos_futuros *eventos_futuros)
+{
+    liberar_resultados(resultados);
+    liberar_estadisticas(estadisticas);
+    liberar_eventos_futuros(eventos_futuros);
+    liberar_memoria_globales();
+}
+
+void liberar_resultados(t_resultados *resultados)
+{
+    free(resultados->porcentaje_arrepentimiento);
+    free(resultados->porcentaje_tiempo_ocioso);
+    free(resultados->promedio_espera);
+    free(resultados->promedio_permenancia);
+    free(resultados);
+}
+
+void liberar_estadisticas(t_estadisticas *estadisticas)
+{
+    free(estadisticas->arrepentidos_por_cola);
+    free(estadisticas->intervalo_tiempo_ocioso);
+    free(estadisticas->sumatoria_tiempo_de_salida);
+    free(estadisticas->sumatoria_tiempo_ocioso);
+    free(estadisticas->sumatoria_tiempos_atencion);
+    free(estadisticas->sumatoria_tiempos_de_llegada);
+    free(estadisticas->total_personas);
+    free(estadisticas);
+}
+
+void liberar_eventos_futuros(t_eventos_futuros *eventos_futuros)
+{
+    free(eventos_futuros->tiempo_proxima_salida);
+    free(eventos_futuros);
+}
+
+void liberar_memoria_globales()
+{
+    free(distribucion_ia);
+    free(distribucion_ta);
+    log_destroy(un_logger);
 }
 
 void calcular_resultados(t_resultados *resultados, t_estadisticas *estadisticas)

@@ -68,7 +68,12 @@ double calcular_porcentaje_arrepentimiento(t_estadisticas *, int);
 
 void imprimir_resultados(t_resultados*);
 void cargar_configuracion_fdp();
-void liberar_memoria();
+
+void liberar_memoria(t_resultados*,t_estadisticas*,t_eventos_futuros*);
+void liberar_resultados(t_resultados *);
+void liberar_estadisticas(t_estadisticas *);
+void liberar_eventos_futuros(t_eventos_futuros *);
+void liberar_memoria_globales();
 
 ///////////////////////////////////////////////
 
