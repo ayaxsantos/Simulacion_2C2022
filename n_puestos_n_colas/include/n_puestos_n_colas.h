@@ -22,13 +22,13 @@ typedef struct eventos
 
 typedef struct estadisticas
 {
-    int *sumatoria_tiempos_de_llegada;
-    int *sumatoria_tiempo_de_salida;
-    int *sumatoria_tiempos_atencion;
-    int *sumatoria_tiempo_ocioso;
-    int *intervalo_tiempo_ocioso;
-    int *total_personas;
-    int *arrepentidos_por_cola;
+    double *sumatoria_tiempos_de_llegada;
+    double *sumatoria_tiempo_de_salida;
+    double *sumatoria_tiempos_atencion;
+    double *sumatoria_tiempo_ocioso;
+    double *intervalo_tiempo_ocioso;
+    double *total_personas;
+    double *arrepentidos_por_cola;
 }t_estadisticas;
 
 typedef struct resultados
@@ -52,7 +52,7 @@ void cargar_configuracion_fdp();
 int obtener_puesto_menor_TPS(int*);
 int seleccionar_puesto(int*);
 unsigned long obtener_intervalo_entre_arribos();
-void decidir_arrepentimiento(int, int*, bool*);
+void decidir_arrepentimiento(int, double*, bool*);
 void inicializar_vector_nulo(void**);
 void set_condiciones_iniciales(t_estadisticas*, t_eventos_futuros *);
 unsigned int obtener_tiempo_atencion(int);

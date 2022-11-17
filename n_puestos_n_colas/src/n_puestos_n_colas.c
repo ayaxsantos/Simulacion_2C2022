@@ -60,8 +60,8 @@ double fdp(int x)
 unsigned int obtener_tiempo_atencion(int puesto_elegido)
 {
     //TODO: Resolver como procesar n fdp
-    //return generar_valor_dist_uniforme(distribucion_ta);
-    return metodo_del_rechazo(distribucion_ta, 0.375, fdp);
+    return generar_valor_dist_uniforme(distribucion_ta);
+    //return metodo_del_rechazo(distribucion_ta, 0.375, fdp);
 }
 
 unsigned long obtener_intervalo_entre_arribos()
@@ -228,13 +228,13 @@ t_resultados *inicializar_resultados()
 
 void inicializar_vector_nulo(void **un_campo)
 {
-    int tamanio = cantidad_puestos * sizeof(int);
+    int tamanio = cantidad_puestos * sizeof(double);
     *un_campo = malloc(tamanio);
     memset(*un_campo, 0, tamanio);
 }
 
 //Rutina de arrepentimiento
-void decidir_arrepentimiento(int num_elem,int *arrepentidos_en_cola, bool* se_queda)
+void decidir_arrepentimiento(int num_elem,double *arrepentidos_en_cola, bool* se_queda)
 {
     int elem_sin_persona = num_elem - 1;
     srand(time(NULL));
