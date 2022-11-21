@@ -61,9 +61,9 @@ void procesar_llegada(t_eventos_futuros *,t_estadisticas *);
 void procesar_salida(t_eventos_futuros *,t_estadisticas *,int);
 void calcular_resultados(t_resultados*, t_estadisticas *);
 
-double calcular_tiempo_en_sistema(int, t_estadisticas *, int);
+double calcular_promedio_permanencia(int, t_estadisticas *, int);
 double calcular_promedio_espera(int, t_estadisticas *, int);
-double calcular_promedio_tiempo_ocioso(t_estadisticas *, int);
+double calcular_porcentaje_de_tiempo_ocioso(t_estadisticas *, int);
 double calcular_porcentaje_arrepentimiento(t_estadisticas *, int);
 
 void imprimir_resultados(t_resultados*);

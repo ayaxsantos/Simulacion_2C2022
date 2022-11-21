@@ -178,9 +178,9 @@ void calcular_resultados(t_resultados *resultados, t_estadisticas *estadisticas)
     {
         tiempo_en_sistema = estadisticas->sumatoria_tiempo_de_salida[k] + estadisticas->sumatoria_tiempos_de_llegada[k];
 
-        resultados->promedio_permenancia[k] = calcular_tiempo_en_sistema(tiempo_en_sistema,estadisticas,k);
+        resultados->promedio_permenancia[k] = calcular_promedio_permanencia(tiempo_en_sistema,estadisticas,k);
         resultados->promedio_espera[k] = calcular_promedio_espera(tiempo_en_sistema,estadisticas,k);
-        resultados->porcentaje_tiempo_ocioso[k] = calcular_promedio_tiempo_ocioso(estadisticas,k);
+        resultados->porcentaje_tiempo_ocioso[k] = calcular_porcentaje_de_tiempo_ocioso(estadisticas,k);
         resultados->porcentaje_arrepentimiento[k] = calcular_porcentaje_arrepentimiento(estadisticas,k);
     }
 }
@@ -197,7 +197,7 @@ void imprimir_resultados(t_resultados* resultados)
     }
 }
 
-double calcular_tiempo_en_sistema(int tiempo_en_sistema, t_estadisticas *estadisticas, int k)
+double calcular_promedio_permanencia(int tiempo_en_sistema, t_estadisticas *estadisticas, int k)
 {
     if(estadisticas->total_personas[k] == 0)
         return -1;
@@ -213,7 +213,7 @@ double calcular_promedio_espera(int tiempo_en_sistema, t_estadisticas *estadisti
         return (tiempo_en_sistema - estadisticas->sumatoria_tiempos_atencion[k]) / estadisticas->total_personas[k];
 }
 
-double calcular_promedio_tiempo_ocioso(t_estadisticas *estadisticas, int k)
+double calcular_porcentaje_de_tiempo_ocioso(t_estadisticas *estadisticas, int k)
 {
     return (estadisticas->sumatoria_tiempo_ocioso[k] * 100) / t;
 }
