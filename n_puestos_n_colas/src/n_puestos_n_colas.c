@@ -107,15 +107,15 @@ void realizar_simulacion(int tiempo_finalizacion)
 
         if(eventos_futuros->tiempo_proxima_llegada <= eventos_futuros->tiempo_proxima_salida[indice_puesto])
         {
-            //ES UNA LLEGADA
-            procesar_llegada(eventos_futuros,estadisticas);
-            log_info(un_logger,"ENTRADA | Tiempo: %d",t);
+            procesar_llegada(eventos_futuros,estadisticas);     //ES UNA LLEGADA
+            if(hay_tracing_activo)
+                log_trace(logger_trace,"ENTRADA | Tiempo: %d",t);
         }
         else
         {
-            //ES UNA SALIDA
-            procesar_salida(eventos_futuros, estadisticas, indice_puesto);
-            log_info(un_logger,"SALIDA | Tiempo: %d",t);
+            procesar_salida(eventos_futuros, estadisticas, indice_puesto);      //ES UNA SALIDA
+            if(hay_tracing_activo)
+                log_trace(logger_trace,"SALIDA | Tiempo: %d",t);
         }
 
         if(t >= tiempo_finalizacion)
@@ -330,7 +330,9 @@ int obtener_puesto_menor_TPS(int unos_tps[])
 void iniciar_logger()
 {
     t_log_level nivel_log = LOG_LEVEL_INFO;
+
     un_logger = log_create("./n_puestos_n_colas.log","n_puestos_n_colas",true,nivel_log);
+    logger_trace = log_create("./simulation_trace.log","n_puestos_n_colas",true,LOG_LEVEL_TRACE);
 
     if(un_logger == NULL)
     {
@@ -346,6 +348,7 @@ void cargar_confguracion(int *tiempo_finalizacion)
 
     cantidad_puestos = config_get_int_value(una_config, "CANTIDAD_COLAS_Y_PUESTOS");
     *tiempo_finalizacion = config_get_int_value(una_config,"TIEMPO_SIMULACION");
+    hay_tracing_activo = config_has_property(una_config,"HABILITAR_TRACING");
 
     config_destroy(una_config);
 }

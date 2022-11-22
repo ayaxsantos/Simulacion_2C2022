@@ -78,6 +78,8 @@ void liberar_memoria_globales();
 ///////////////////////////////////////////////
 
 t_log *un_logger;
+t_log *logger_trace;
+bool hay_tracing_activo;
 int cantidad_puestos;
 int t;
 int *num_elem;
