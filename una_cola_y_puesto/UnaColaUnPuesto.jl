@@ -1,4 +1,4 @@
-# Composicion, utilizar ∘ en lugar de '.' (Haskell)
+# Composicion, utilizar ∘ en lugar de '.' (Haskell flashbacks...)
 # Nombres de variables siguen criterio utilizado en catedra (recordar tiempos de examen)
 
 mutable struct Resultados
@@ -12,7 +12,7 @@ HV = Inf64
 
 #######################################################
 
-#Utils para currying (permite aplicacion parcial mas estilo Haskell)
+#Utils para currying
 #Utils para generacion de valores aleatorios para las fdp dadas
 
 curry(f, x) = (xs...) -> f(x, xs...)
